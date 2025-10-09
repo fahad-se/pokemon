@@ -1,0 +1,22 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+.home-page {
+  padding: 24px;
+  background: #f0f2f5;
+  min-height: 100%;
+}
+
+.home-title {
+  text-align: center;
+  margin-bottom: 32px;
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 60vh;
+}
