@@ -22,7 +22,7 @@ const Home = () => {
   const [searchText, setSearchText] = useState('');
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20); 
+  const [pageSize] = useState(20); // keep default 20 per page
   const [total, setTotal] = useState(0);
 
   // ✅ API to fetch a page of Pokémon (uses limit & offset)
@@ -85,6 +85,7 @@ const Home = () => {
     }
   }, [searchText]);
 
+  // fetch when currentPage changes (only when not searching)
   useEffect(() => {
     if (searchText === '') {
       fetchPokemons(currentPage);
