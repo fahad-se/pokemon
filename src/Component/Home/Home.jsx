@@ -1,5 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Row, Col, Card, Spin, Typography, message, Input, Pagination } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -16,6 +17,7 @@ function debounce(func, delay) {
 }
 
 const Home = () => {
+  const navigate = useNavigate();
   const [allPokemonBasic, setAllPokemonBasic] = useState([]); // store all pokemon {name, url}
   const [pokemonList, setPokemonList] = useState([]); // detailed pokemon data to display
   const [loading, setLoading] = useState(false);
@@ -159,6 +161,7 @@ const Home = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={pokemon.id}>
               <Card
                 hoverable
+                onClick={() => navigate(`/pokemon/${pokemon.id}`)}
                 title={pokemon.name.toUpperCase()}
                 cover={
                   <img

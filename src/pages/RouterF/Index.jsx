@@ -4,6 +4,7 @@ import Header from "../../component/header/Index";
 import Footer from "../../component/footer/Index";
 import Home from "../../Component/Home/Home";
 import Service from "../../Component/Servicess/Service";
+import PokemonDetail from "../Pokemon/PokemonDetail";
 
 // import './RouterF.css';
 
@@ -15,12 +16,9 @@ const RouterF = () => {
 
         <div className="content-wrapper">
           <Routes>
-            {/* Example route */}
-            {/* <Route path="/" element={<Home />} /> */}
-              <Route path="/" element={<Home />} />
-              {/* Add more routes as needed */}
-              <Route path="/services" element={<Service />} />
-            
+            <Route path="/" element={<Home />} />
+            <Route path="/pokemon/:id" element={<PokemonDetail />} />
+            <Route path="/services" element={<Service />} />
 
           </Routes>
         </div>
