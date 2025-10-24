@@ -16,25 +16,42 @@ function debounce(func, delay) {
 }
 
 const Home = () => {
-  const [pokemonList, setPokemonList] = useState([]);
+  const [allPokemonBasic, setAllPokemonBasic] = useState([]); // store all pokemon {name, url}
+  const [pokemonList, setPokemonList] = useState([]); // detailed pokemon data to display
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [searchText, setSearchText] = useState('');
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize] = useState(20); // keep default 20 per page
+  const [pageSize] = useState(20);
   const [total, setTotal] = useState(0);
 
-  // ✅ API to fetch a page of Pokémon (uses limit & offset)
+  // Fetch all pokemon basic info once
+  useEffect(() => {
+    const fetchAllPokemon = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch('https://pokeapi.co/api/v2/pokemon?limit=100000&offset=0');
+        const data = await response.json();
+        setAllPokemonBasic(data.results); // array of {name, url}
+        setTotal(data.count);
+      } catch (error) {
+        message.error('Failed to load Pokémon data');
+        console.error(error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAllPokemon();
+  }, []);
+
+  // Fetch detailed pokemons for a page (normal pagination)
   const fetchPokemons = async (page = 1) => {
     setLoading(true);
     try {
       const offset = (page - 1) * pageSize;
       const response = await fetch(`https://pokeapi.co/api/v2/pokemon?limit=${pageSize}&offset=${offset}`);
       const data = await response.json();
-
-      // update total count for pagination
-      if (typeof data.count === 'number') setTotal(data.count);
 
       const detailedData = await Promise.all(
         data.results.map(async (pokemon) => {
@@ -53,39 +70,51 @@ const Home = () => {
     }
   };
 
-  // ✅ API to fetch by name
-  const fetchPokemonByName = async (name) => {
-    setLoading(true);
-    try {
-      const response = await fetch(`https://pokeapi.co/api/v2/pokemon/${name.toLowerCase()}`);
-      if (!response.ok) {
-        setNotFound(true);
-        setPokemonList([]);
-        return;
-      }
-      const data = await response.json();
-      setPokemonList([data]);
-      setNotFound(false);
-    } catch (error) {
-      message.error('Failed to search Pokémon');
-      console.error(error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // ✅ Effect: fetch list or search result
+  // Effect: Run when searchText changes
   useEffect(() => {
     if (searchText === '') {
-      // when clearing search, reset to first page and fetch
+      // When search cleared, reset to page 1 and fetch normal page
       setCurrentPage(1);
       fetchPokemons(1);
+      setNotFound(false);
     } else {
-      fetchPokemonByName(searchText);
-    }
-  }, [searchText]);
+      // Filter allPokemonBasic by substring match
+      const filtered = allPokemonBasic.filter(pokemon =>
+        pokemon.name.toLowerCase().includes(searchText.toLowerCase())
+      );
 
-  // fetch when currentPage changes (only when not searching)
+      if (filtered.length === 0) {
+        setPokemonList([]);
+        setNotFound(true);
+        return;
+      }
+
+      // Fetch details for first 20 filtered pokemons
+      const fetchFilteredDetails = async () => {
+        setLoading(true);
+        try {
+          const limitedFiltered = filtered.slice(0, 20);
+          const detailedData = await Promise.all(
+            limitedFiltered.map(async (pokemon) => {
+              const res = await fetch(pokemon.url);
+              return res.json();
+            })
+          );
+          setPokemonList(detailedData);
+          setNotFound(false);
+        } catch (error) {
+          message.error('Failed to fetch Pokémon details');
+          console.error(error);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchFilteredDetails();
+    }
+  }, [searchText, allPokemonBasic]);
+
+  // Effect: fetch page data when currentPage changes (only if no search)
   useEffect(() => {
     if (searchText === '') {
       fetchPokemons(currentPage);
@@ -93,7 +122,7 @@ const Home = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage]);
 
-  // ✅ Debounced handler only updates `searchText`
+  // Debounced search handler
   const debouncedSearch = useCallback(
     debounce((val) => {
       setSearchText(val.trim());
@@ -119,13 +148,13 @@ const Home = () => {
       </div>
 
       {loading ? (
-        <div className="spinner">
+        <div className="spinner" style={{ textAlign: 'center', marginTop: 50 }}>
           <Spin size="large" />
         </div>
       ) : notFound ? (
-        <p style={{ textAlign: 'center' }}>No Pokémon found.</p>
+        <p style={{ textAlign: 'center', marginTop: 50 }}>No Pokémon found.</p>
       ) : (
-        <Row gutter={[16, 16]}>
+        <Row gutter={[16, 16]} style={{ marginTop: 20 }}>
           {pokemonList.map((pokemon) => (
             <Col xs={24} sm={12} md={8} lg={6} key={pokemon.id}>
               <Card

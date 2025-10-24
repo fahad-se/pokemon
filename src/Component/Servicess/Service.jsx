@@ -76,7 +76,7 @@ const Servicepage = () => {
   ];
 
   // Handle table change (pagination, sorting, etc.)
-  const handleTableChange = (newPagination, filters, sorter) => {
+  const handleTableChange = (newPagination) => {
     setPagination(newPagination);
   };
 
