@@ -186,7 +186,10 @@ const Home = () => {
             current={currentPage}
             pageSize={pageSize}
             total={total}
-            onChange={(page) => setCurrentPage(page)}
+            onChange={(page) => {
+              setCurrentPage(page);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
             showSizeChanger={false}
           />
         </div>

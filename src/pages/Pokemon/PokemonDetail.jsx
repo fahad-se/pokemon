@@ -13,7 +13,7 @@ const PokemonDetail = () => {
   const navigate = useNavigate();
   const [pokemon, setPokemon] = useState(null);
   const [species, setSpecies] = useState(null);
-  const [evolutionChain, setEvolutionChain] = useState(null);
+  // Removed unused evolutionChain state
   const [loading, setLoading] = useState(true);
 
   const getTypeColor = (type) => {
@@ -41,10 +41,10 @@ const PokemonDetail = () => {
         const speciesData = await speciesResponse.json();
         setSpecies(speciesData);
 
-        // Fetch evolution chain
-        const evolutionResponse = await fetch(speciesData.evolution_chain.url);
-        const evolutionData = await evolutionResponse.json();
-        setEvolutionChain(evolutionData);
+        // Fetch evolution chain (removed, not used)
+        // const evolutionResponse = await fetch(speciesData.evolution_chain.url);
+        // const evolutionData = await evolutionResponse.json();
+        // setEvolutionChain(evolutionData);
       } catch (error) {
         console.error('Failed to fetch Pokémon details:', error);
       } finally {
