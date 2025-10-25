@@ -1,6 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { Table, Input, message, Spin, Drawer, Image, Tag, Row, Col, Card, Progress, Button } from 'antd';
+import { useNavigate } from 'react-router-dom';
 
 const { Search } = Input;
 
@@ -15,6 +16,7 @@ const Servicepage = () => {
   });
   const [drawerVisible, setDrawerVisible] = useState(false);
   const [selectedPokemon, setSelectedPokemon] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPokemons();
@@ -48,6 +50,17 @@ const Servicepage = () => {
     return pokemonList.filter((p) => p.name.toLowerCase().includes(lower));
   }, [pokemonList, searchText]);
 
+  // open / close drawer
+  const openDrawer = (record) => {
+    setSelectedPokemon(record);
+    setDrawerVisible(true);
+  };
+
+  const closeDrawer = () => {
+    setDrawerVisible(false);
+    setSelectedPokemon(null);
+  };
+
   // Table columns definition
   const columns = [
     {
@@ -56,7 +69,15 @@ const Servicepage = () => {
       key: 'thumb',
       width: 80,
       render: (_, record) => (
-        <Image src={record.sprites?.other?.['official-artwork']?.front_default || record.sprites?.front_default} width={64} preview={false} />
+        <div style={{ textAlign: 'center' }}>
+          <img
+            src={record.sprites?.other?.['official-artwork']?.front_default || record.sprites?.front_default}
+            alt={record.name}
+            width={64}
+            style={{ cursor: 'pointer' }}
+            onClick={(e) => { e.stopPropagation(); openDrawer(record); }}
+          />
+        </div>
       )
     },
     {
@@ -94,16 +115,6 @@ const Servicepage = () => {
     setPagination(newPagination);
   };
 
-  const openDrawer = (record) => {
-    setSelectedPokemon(record);
-    setDrawerVisible(true);
-  };
-
-  const closeDrawer = () => {
-    setDrawerVisible(false);
-    setSelectedPokemon(null);
-  };
-
   return (
     <div style={{ padding: 24 }}>
       <h1>Pokémon Table</h1>
@@ -112,13 +123,14 @@ const Servicepage = () => {
         style={{ width: 300, marginBottom: 16 }}
         onChange={(e) => {
           setSearchText(e.target.value);
+          // Reset to first page on search
           setPagination((prev) => ({ ...prev, current: 1 }));
         }}
         allowClear
       />
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 500 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
           <Spin tip="Loading..." size="large" />
         </div>
       ) : (
@@ -144,7 +156,7 @@ const Servicepage = () => {
             footer={(
               <div style={{ textAlign: 'right' }}>
                 <Button onClick={closeDrawer} style={{ marginRight: 8 }}>Close</Button>
-                <Button type="primary" onClick={() => { closeDrawer(); window.location.href = `/pokemon/${selectedPokemon?.id}`; }}>Open Full Page</Button>
+                <Button type="primary" onClick={() => { closeDrawer(); navigate(`/pokemon/${selectedPokemon?.id}`); }}>Open Full Page</Button>
               </div>
             )}
           >
