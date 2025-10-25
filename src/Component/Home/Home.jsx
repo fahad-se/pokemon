@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { Row, Col, Card, Spin, Typography, message, Input, Pagination } from 'antd';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const { Title } = Typography;
 const { Search } = Input;
@@ -192,14 +192,27 @@ const Home = () => {
             <Col xs={24} sm={12} md={8} lg={6} key={pokemon.id}>
               <Card
                 hoverable
-                onClick={() => navigate(`/pokemon/${pokemon.id}`)}
-                title={pokemon.name.toUpperCase()}
+                title={
+                  <Link
+                    to={`/pokemon/${pokemon.id}?tab=images`}
+                    onClick={(e) => e.stopPropagation()}
+                    style={{ cursor: 'pointer', color: '#1890ff', fontWeight: 600 }}
+                    title={`View images for ${pokemon.name}`}
+                  >
+                    {pokemon.name.toUpperCase()}
+                  </Link>
+                }
                 cover={
-                  <img
-                    alt={pokemon.name}
-                    src={pokemon.sprites.other['official-artwork'].front_default}
-                    style={{ height: 200, objectFit: 'contain' }}
-                  />
+                  <div
+                    onClick={() => navigate(`/pokemon/${pokemon.id}`)}
+                    style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  >
+                    <img
+                      alt={pokemon.name}
+                      src={pokemon.sprites.other['official-artwork'].front_default}
+                      style={{ height: 200, objectFit: 'contain' }}
+                    />
+                  </div>
                 }
               >
                 <p><strong>ID:</strong> {pokemon.id}</p>

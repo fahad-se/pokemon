@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Row, Col, Card, Spin, Button, Tag, Progress, Tabs } from 'antd';
-import { ArrowLeftOutlined, HeartOutlined, ThunderboltOutlined, DashboardOutlined } from '@ant-design/icons';
+import { useParams, useNavigate, useSearchParams } from 'react-router-dom';
+import { Row, Col, Card, Spin, Button, Tag, Progress, Tabs, Carousel, Image } from 'antd';
+import { ArrowLeftOutlined, HeartOutlined, ThunderboltOutlined, DashboardOutlined, PictureOutlined } from '@ant-design/icons';
 import './PokemonDetail.css';
 
 const { TabPane } = Tabs;
@@ -11,6 +11,7 @@ const capitalizeFirst = (str) => str.charAt(0).toUpperCase() + str.slice(1);
 const PokemonDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const [pokemon, setPokemon] = useState(null);
   const [species, setSpecies] = useState(null);
   // Removed unused evolutionChain state
@@ -54,6 +55,35 @@ const PokemonDetail = () => {
 
     fetchPokemonData();
   }, [id]);
+
+  // determine which tab to open by default (allow ?tab=images to open the images gallery)
+  const initialTab = searchParams.get('tab') === 'images' ? 'images' : '1';
+  const [activeTab, setActiveTab] = useState(initialTab);
+
+  useEffect(() => {
+    const t = searchParams.get('tab');
+    setActiveTab(t === 'images' ? 'images' : (t || '1'));
+  }, [searchParams]);
+
+  const images = [];
+  if (pokemon && pokemon.sprites) {
+    const s = pokemon.sprites;
+    // collect common sprite urls (filter nulls)
+    const candidates = [
+      s.front_default,
+      s.back_default,
+      s.front_shiny,
+      s.back_shiny,
+      s.front_female,
+      s.back_female,
+      s.front_shiny_female,
+      s.back_shiny_female,
+      s.other?.['official-artwork']?.front_default,
+      s.other?.dream_world?.front_default,
+      s.other?.home?.front_default
+    ];
+    candidates.forEach((u) => { if (u) images.push(u); });
+  }
 
   if (loading) {
     return (
@@ -99,7 +129,36 @@ const PokemonDetail = () => {
         ))}
       </div>
 
-      <Tabs defaultActiveKey="1" centered>
+      <Tabs activeKey={activeTab} onChange={(key) => {
+        setActiveTab(key);
+        // reflect in URL for sharable link
+        if (key === 'images') setSearchParams({ tab: 'images' });
+        else setSearchParams({ tab: key });
+      }} centered>
+        <TabPane
+          tab={
+            <span>
+              <PictureOutlined />
+              Images
+            </span>
+          }
+          key="images"
+        >
+          {images.length === 0 ? (
+            <p>No images available for this Pokémon.</p>
+          ) : (
+            <div style={{ maxWidth: 800, margin: '0 auto' }}>
+              <Carousel autoplay dots>
+                {images.map((url, idx) => (
+                  <div key={idx} style={{ textAlign: 'center' }}>
+                    <Image src={url} alt={`${pokemon.name}-${idx}`} preview={{ src: url }} style={{ maxHeight: 420, margin: '0 auto' }} />
+                  </div>
+                ))}
+              </Carousel>
+            </div>
+          )}
+        </TabPane>
+
         <TabPane
           tab={
             <span>
@@ -145,7 +204,7 @@ const PokemonDetail = () => {
 
             <Col xs={24} md={12}>
               <Card className="pokemon-card" title="Abilities">
-                {pokemon.abilities.map((ability, index) => (
+                {pokemon.abilities.map((ability) => (
                   <Tag 
                     key={ability.ability.name}
                     color={ability.is_hidden ? 'volcano' : 'blue'}
