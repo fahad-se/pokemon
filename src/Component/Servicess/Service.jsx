@@ -88,14 +88,15 @@ const Servicepage = () => {
         style={{ width: 300, marginBottom: 16 }}
         onChange={(e) => {
           setSearchText(e.target.value);
-          // Reset to first page on search
           setPagination((prev) => ({ ...prev, current: 1 }));
         }}
         allowClear
       />
 
       {loading ? (
-        <Spin tip="Loading..." size="large" />
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 300 }}>
+          <Spin tip="Loading..." size="large" />
+        </div>
       ) : (
         <Table
           columns={columns}

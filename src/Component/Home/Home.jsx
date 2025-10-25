@@ -23,6 +23,8 @@ const Home = () => {
   const [loading, setLoading] = useState(false);
   const [notFound, setNotFound] = useState(false);
   const [searchText, setSearchText] = useState('');
+  // computed minHeight for spinner (viewport minus header/footer)
+  const [containerMinHeight, setContainerMinHeight] = useState('60vh');
   // Pagination state
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize] = useState(20);
@@ -30,6 +32,25 @@ const Home = () => {
 
   // Fetch all pokemon basic info once
   useEffect(() => {
+    // compute spinner container height on mount and resize
+    const updateContainerMinHeight = () => {
+      try {
+        const header = document.querySelector('.site-header');
+        const footer = document.querySelector('.site-footer');
+        const headerH = header ? header.offsetHeight : 0;
+        const footerH = footer ? footer.offsetHeight : 0;
+        const available = window.innerHeight - headerH - footerH;
+        // keep a sensible minimum so very small viewports don't collapse
+        setContainerMinHeight(`${Math.max(available, 300)}px`);
+      } catch {
+          setContainerMinHeight('60vh');
+        }
+    };
+
+    updateContainerMinHeight();
+    window.addEventListener('resize', updateContainerMinHeight);
+    // cleanup
+    const remover = () => window.removeEventListener('resize', updateContainerMinHeight);
     const fetchAllPokemon = async () => {
       try {
         setLoading(true);
@@ -45,6 +66,7 @@ const Home = () => {
       }
     };
     fetchAllPokemon();
+    return remover;
   }, []);
 
   // Fetch detailed pokemons for a page (normal pagination)
@@ -150,7 +172,16 @@ const Home = () => {
       </div>
 
       {loading ? (
-        <div className="spinner" style={{ textAlign: 'center', marginTop: 50 }}>
+        <div
+          className="spinner"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            minHeight: containerMinHeight,
+            width: '100%'
+          }}
+        >
           <Spin size="large" />
         </div>
       ) : notFound ? (
